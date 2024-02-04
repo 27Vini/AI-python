@@ -6,6 +6,7 @@ from utils import *
 df = pd.read_csv("sentiment140_processed.csv", encoding="ISO-8859-1")
 df.drop("text", axis=1, inplace=True)
 df = df.dropna(subset=["processed_text"])
+df = df.dropna(subset=["polarity"])
 
 X_train, X_, y_train, y_ = train_test_split(df["processed_text"], df["polarity"], test_size=0.40, random_state=42)
 X_cv, X_test, y_cv, y_test = train_test_split(X_, y_, test_size=0.50, random_state=42)
@@ -22,18 +23,19 @@ X_test = tf.keras.preprocessing.sequence.pad_sequences(tokenizer.texts_to_sequen
 
 model = tf.keras.models.Sequential([
     tf.keras.layers.Embedding(input_dim=max_words, output_dim=128, input_length=max_sequence_length),
-    tf.keras.layers.LSTM(units=64, kernel_regularizer=tf.keras.regularizers.l2(0.001), return_sequences=True),
-    tf.keras.layers.LSTM(units=32),
-    tf.keras.layers.Dense(units=128, activation="relu"),
-    tf.keras.layers.Dense(units=3, activation="linear")
+    tf.keras.layers.LSTM(units=64, return_sequences=True),
+    tf.keras.layers.Dropout(0.5),
+    tf.keras.layers.LSTM(units=32, kernel_regularizer=tf.keras.regularizers.l2(0.001)),
+    tf.keras.layers.Dense(units=32,activation="relu"),
+    tf.keras.layers.Dense(units=3, activation="softmax")
 ])
 
 model.compile(optimizer=tf.keras.optimizers.Adam(0.001),
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(),
               metrics=["accuracy"])
 
 early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
-history = model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_cv, y_cv), callbacks=[early_stopping])
+history = model.fit(X_train, y_train, epochs=2, batch_size=32, validation_data=(X_cv, y_cv), callbacks=[early_stopping])
 
 train_loss = history.history['loss']
 train_accuracy = history.history['accuracy']
