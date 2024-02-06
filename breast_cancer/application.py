@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from sklearn.datasets import load_breast_cancer
 from xgboost import XGBClassifier
+import xgboost as xgb
 
 data = load_breast_cancer()
 
