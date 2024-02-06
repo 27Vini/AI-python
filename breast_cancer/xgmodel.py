@@ -40,21 +40,4 @@ print(f"Accuracy = {(accuracy * 100)} and F1 = {f1 * 100}")
 
 plot_xg_graph(model,y_train,y_test,X)
 
-# Fazer previsões de probabilidade para os dados de teste
-y_probs = model.predict_proba(X_test)
-
-import random
-
-# Selecionar instâncias onde a probabilidade da classe 1 é alta
-indices_classe_1 = np.where(y_probs[:, 0] > 0.9)[0]
-
-# Selecionar um índice aleatório entre os índices onde a previsão é 1
-indice_aleatorio = random.choice(indices_classe_1)
-
-# Exibir os valores correspondentes ao índice aleatório
-print("Valores que geram um resultado 1:")
-print(f"Índice: {indice_aleatorio}, Valores: {X_test.iloc[indice_aleatorio]}")
-
-
-
 model.save_model('modelo_xgboost.xgb')
